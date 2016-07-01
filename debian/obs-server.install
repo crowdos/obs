@@ -1,0 +1,11 @@
+etc/obs-server/BSConfig.pm
+usr/lib/obs/server/*.pm
+usr/lib/obs/server/BSSched/*
+usr/lib/obs/server/bs_*
+usr/lib/obs/server/plugins/*
+usr/lib/obs/server/XML/Structured.pm
+usr/lib/obs/server/call-service-in-lxc.sh
+usr/lib/obs/server/README usr/share/doc/obs-server/
+usr/lib/obs/server/DESIGN usr/share/doc/obs-server/
+usr/lib/obs/server/License usr/share/doc/obs-server/
+usr/lib/obs/server/BSConfig.pm.template usr/share/doc/obs-server/
