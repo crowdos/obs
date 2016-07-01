@@ -29,6 +29,7 @@ Architecture: all
 Section: utils
 Depends: obs-build (= ${binary:Version}),
          ${misc:Depends},
-	 ${perl:Depends}
+	 ${perl:Depends},
+	 daemon
 Description: OBS server
  OBS server backend

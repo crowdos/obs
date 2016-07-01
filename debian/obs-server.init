@@ -1,0 +1,81 @@
+. /lib/lsb/init-functions
+
+DEFAULTS_FILE=/etc/default/obs-backend
+TOOLS_PATH=/usr/lib/obs/server/
+
+export PATH="$PATH:/sbin/:/usr/sbin/:$TOOLS_PATH"
+
+OBS_USER=obs
+OBS_GROUP=obs
+
+if [ -s $DEFAULTS_FILE ]; then
+    . $DEFAULTS_FILE
+fi
+
+_do_start() {
+    eval var=\$$1
+    if [ "x$var" != "xtrue" ]; then
+	return 0
+    fi
+
+    log_daemon_msg "Starting $2"
+    /usr/bin/daemon -n $2 -u $OBS_USER:$OBS_GROUP -D $TOOLS_PATH -r -- $2 ${@:3}
+
+    ret=$?
+    log_end_msg $ret
+
+    return $ret
+}
+
+_do_stop() {
+    eval var=\$$1
+    if [ "x$var" != "xtrue" ]; then
+	return 0
+    fi
+
+    log_daemon_msg "Stopping $2"
+    /usr/bin/daemon --stop -n $2 -u $OBS_USER:$OBS_GROUP -D $TOOLS_PATH -r -- $2 ${@:3}
+
+    ret=$?
+    log_end_msg $ret
+
+    return $ret
+}
+
+
+do_start() {
+    _do_start REPO_SERVER_ENABLE bs_repserver
+    _do_start SRC_SERVER_ENABLE bs_srcserver
+    _do_start DISPATCH_ENABLE bs_dispatch
+    for i in $SCHED_ARCHS; do
+	_do_start SCHED_ENABLE $i;
+    done
+}
+
+do_stop() {
+    _do_stop REPO_SERVER_ENABLE bs_repserver
+    _do_stop SRC_SERVER_ENABLE bs_srcserver
+    _do_stop DISPATCH_ENABLE bs_dispatch
+    for i in $SCHED_ARCHS; do
+	_do_stop SCHED_ENABLE $i
+    done
+}
+
+case "$1" in
+    start)
+	do_start
+	;;
+    stop)
+	do_stop
+	;;
+    restart)
+	do_stop
+	do_start
+	;;
+    *)
+	echo "Only start, stop and restart are supported"
+	exit 3
+	;;
+esac
+
+exit 0
