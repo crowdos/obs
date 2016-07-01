@@ -1,0 +1,19 @@
+--- a/open-build-service/src/backend/build/configs/debian.conf
++++ b/open-build-service/src/backend/build/configs/debian.conf
+@@ -4,6 +4,7 @@
+ Preinstall: libc6 libncurses5 libacl1 libattr1
+ Preinstall: libreadline4 tar gawk dpkg
+ Preinstall: sysv-rc gzip base-files
++Preinstall: sysvinit-core
+ 
+ Runscripts: base-files initscripts
+ 
+@@ -48,7 +49,7 @@
+ Conflict: ghostscript-library:ghostscript-mini
+ 
+ Ignore: sysvinit:initscripts
+-
++Ignore: systemd
+ Ignore: aaa_base:aaa_skel,suse-release,logrotate,ash,mingetty,distribution-release
+ Ignore: gettext-devel:libgcj,libstdc++-devel
+ Ignore: pwdutils:openslp

@@ -4,7 +4,7 @@
 #export DH_VERBOSE=1
 
 %:
-	dh $@
+	dh $@ --with quilt
 
 override_dh_install:
 	make -C open-build-service/src/backend/ OBS_BACKEND_PREFIX=/usr/lib/obs/ DESTDIR=$(CURDIR)/debian/tmp/ install
