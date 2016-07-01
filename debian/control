@@ -5,14 +5,29 @@ Maintainer: Mohammed Sameer <msameer@foolab.org>
 Build-Depends: debhelper (>= 9),
 Standards-Version: 3.9.6
 
+Package: obs-common
+Architecture: all
+Section: utils
+Depends: ${misc:Depends},
+         libtimedate-perl,
+	 ${perl:Depends},
+         libxml-structured-perl,
+         libxml-parser-perl
+Description: common OBS files
+ This package contains common files needed to run OBS tools.
+
 Package: obs-build
 Architecture: all
 Section: utils
 Depends: ${misc:Depends},
          libtimedate-perl,
-	 ${perl:Depends}
-Description: OBS build
- OBS build backend
+	 ${perl:Depends},
+         obs-common,
+         binutils,
+	 xz-utils
+Recommends: lxc, bsdtar
+Description: build code for OBS
+ This package contains the build code needed for OBS workers
 
 Package: obs-worker
 Architecture: all
@@ -20,9 +35,10 @@ Section: utils
 Depends: obs-build (= ${binary:Version}),
          ${misc:Depends},
          libxml-sax-perl,
-	 ${perl:Depends}
-Description: OBS worker
- OBS worker backend
+	 ${perl:Depends},
+	 obs-common
+Description: worker code for OBS
+ This package contains the worker code for OBS workers
 
 Package: obs-server
 Architecture: all
@@ -30,6 +46,8 @@ Section: utils
 Depends: obs-build (= ${binary:Version}),
          ${misc:Depends},
 	 ${perl:Depends},
-	 daemon
-Description: OBS server
- OBS server backend
+	 libxml-simple-perl,
+	 daemon,
+         obs-common
+Description: backend tools for OBS server
+ This package contains the backend tools needed to run OBS.

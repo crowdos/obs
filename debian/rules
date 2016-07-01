@@ -7,10 +7,23 @@
 	dh $@
 
 override_dh_install:
-	make -C open-build-service/src/backend/ DESTDIR=$(CURDIR)/debian/tmp/ install
-	mkdir -p debian/tmp/etc/obs-server/
-	mv debian/tmp/usr/lib/obs/server/BSConfig.pm debian/tmp/etc/obs-server/
-	rm -fr debian/tmp/usr/lib/obs/server/worker-deltagen.spec
+	make -C open-build-service/src/backend/ OBS_BACKEND_PREFIX=/usr/lib/obs/ DESTDIR=$(CURDIR)/debian/tmp/ install
+	mkdir -p debian/tmp/etc/obs/
+	mv debian/tmp/usr/lib/obs/BSConfig.pm debian/tmp/etc/obs/
+	rm -rf debian/tmp/usr/lib/obs/build/test/
+	rm -rf debian/tmp/usr/lib/obs/build/test-debtransform/
+	rm -rf debian/tmp/usr/lib/obs/build/t/
+	rm -rf debian/tmp/usr/lib/obs/worker-deltagen.spec
+	rm -rf debian/tmp/usr/lib/obs/XML/Structured.pm
+	rm -rf debian/tmp/usr/lib/obs/worker/
+	rm -rf debian/tmp/usr/lib/obs/build/Makefile
+	rm -rf debian/tmp/usr/lib/obs/build/unrpm.1
+	rm -rf debian/tmp/usr/lib/obs/build/vc.1
+	rm -rf debian/tmp/usr/lib/obs/build/build.1
 	# Just in case:
-	rm -rf debian/tmp/usr/lib/obs/server/build/.git
+	rm -rf debian/tmp/usr/lib/obs/build/.git
+	# I have no idea why this is not done correctly:
+	rm -rf debian/tmp/usr/lib/obs/build/build
+	cp open-build-service/src/backend/build/build debian/tmp/usr/lib/obs/build/build
+	chmod +x debian/tmp/usr/lib/obs/build/build
 	dh_install --fail-missing

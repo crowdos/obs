@@ -1,0 +1,6 @@
+etc/obs/BSConfig.pm
+usr/lib/obs/*.pm
+usr/lib/obs/BSConfig.pm.template usr/share/doc/obs-common/
+usr/lib/obs/README usr/share/doc/obs-common/
+usr/lib/obs/DESIGN usr/share/doc/obs-common/
+usr/lib/obs/License usr/share/doc/obs-common/

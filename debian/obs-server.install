@@ -1,11 +1,24 @@
-etc/obs-server/BSConfig.pm
-usr/lib/obs/server/*.pm
-usr/lib/obs/server/BSSched/*
-usr/lib/obs/server/bs_*
-usr/lib/obs/server/plugins/*
-usr/lib/obs/server/XML/Structured.pm
-usr/lib/obs/server/call-service-in-lxc.sh
-usr/lib/obs/server/README usr/share/doc/obs-server/
-usr/lib/obs/server/DESIGN usr/share/doc/obs-server/
-usr/lib/obs/server/License usr/share/doc/obs-server/
-usr/lib/obs/server/BSConfig.pm.template usr/share/doc/obs-server/
+usr/lib/obs/BSSched/*.pm
+usr/lib/obs/BSSched/EventSource/*.pm
+usr/lib/obs/BSSched/BuildJob/*.pm
+usr/lib/obs/bs_srcserver
+usr/lib/obs/bs_repserver
+usr/lib/obs/bs_sched
+usr/lib/obs/bs_mkarchrepo
+usr/lib/obs/bs_publish
+usr/lib/obs/bs_dispatch
+usr/lib/obs/bs_productconvert
+usr/lib/obs/bs_getbinariesproxy
+usr/lib/obs/bs_admin
+usr/lib/obs/bs_mergechanges
+usr/lib/obs/bs_serverstatus
+usr/lib/obs/bs_deltastore
+usr/lib/obs/bs_dodup
+usr/lib/obs/bs_signer
+usr/lib/obs/bs_archivereq
+usr/lib/obs/bs_service
+usr/lib/obs/call-service-in-lxc.sh
+usr/lib/obs/bs_check_consistency
+usr/lib/obs/bs_warden
+usr/lib/obs/plugins/notify_rabbitmq.pm
+usr/lib/obs/plugins/notify_hermes.pm
