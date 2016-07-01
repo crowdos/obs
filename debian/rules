@@ -7,7 +7,7 @@
 	dh $@
 
 override_dh_install:
-	make -C open-build-service/src/backend/ DESTDIR=$(PWD)/debian/tmp/ install
+	make -C open-build-service/src/backend/ DESTDIR=$(CURDIR)/debian/tmp/ install
 	mkdir -p debian/tmp/etc/obs-server/
 	mv debian/tmp/usr/lib/obs/server/BSConfig.pm debian/tmp/etc/obs-server/
 	rm -fr debian/tmp/usr/lib/obs/server/worker-deltagen.spec
