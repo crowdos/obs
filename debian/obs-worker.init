@@ -57,6 +57,7 @@ do_start() {
 	-u root:root \
 	-D $TOOLS_PATH \
 	-e "DEBIAN_FRONTEND=noninteractive" \
+	-o $WORKER_LOG \
 	-r -- $TOOLS_PATH/bs_worker \
 	--arch $WORKER_ARCH \
 	--root $WORKER_ROOT \
