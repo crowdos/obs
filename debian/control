@@ -36,6 +36,7 @@ Depends: obs-build (= ${binary:Version}),
          ${misc:Depends},
          libxml-sax-perl,
 	 ${perl:Depends},
+	 daemon,
 	 obs-common
 Description: worker code for OBS
  This package contains the worker code for OBS workers
