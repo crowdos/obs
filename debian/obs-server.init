@@ -1,7 +1,7 @@
 . /lib/lsb/init-functions
 
 DEFAULTS_FILE=/etc/default/obs-backend
-TOOLS_PATH=/usr/lib/obs/server/
+TOOLS_PATH=/usr/lib/obs/
 
 export PATH="$PATH:/sbin/:/usr/sbin/:$TOOLS_PATH"
 
