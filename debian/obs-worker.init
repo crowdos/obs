@@ -1,0 +1,89 @@
+. /lib/lsb/init-functions
+
+DEFAULTS_FILE=/etc/default/obs-worker
+TOOLS_PATH=/usr/lib/obs/
+
+export PATH="$PATH:/sbin/:/usr/sbin/:$TOOLS_PATH"
+
+if [ -s $DEFAULTS_FILE ]; then
+    . $DEFAULTS_FILE
+fi
+
+do_start() {
+    if [ "x$WORKER_ENABLE" != "xtrue" ]; then
+	return 0
+    fi
+
+    if [ -z "$WORKER_ARCH" ]; then
+	WORKER_ARCH=$(uname -m)
+    fi
+
+    if [ -z "$WORKER_ID" ]; then
+	WORKER_ID=$(hostname --fqdn)/1
+    fi
+
+    if [ -z "$WORKER_ROOT" ]; then
+	WORKER_ROOT=/tmp/worker_root/root/
+    fi
+
+    if [ -z "$WORKER_STATE" ]; then
+	WORKER_STATE=/tmp/worker_root/state/
+    fi
+
+    rm -rf $WORKER_ROOT
+    rm -rf $WORKER_STATE
+
+    mkdir -p $WORKER_ROOT
+    mkdir -p $WORKER_STATE
+
+    # Give the worker a copy of the build code:
+    cp -a $TOOLS_PATH/build $WORKER_STATE
+
+    log_daemon_msg "Starting OBS worker" "bs_worker"
+    /usr/bin/daemon -n bs_worker \
+	-u root:root \
+	-D $TOOLS_PATH \
+	-e "DEBIAN_FRONTEND=noninteractive" \
+	-r -- \
+	--arch $WORKER_ARCH \
+	--root $WORKER_ROOT \
+	--statedir $WORKER_STATE \
+	--id $WORKER_ID \
+	--noworkerupdate --nobuildupdate --nocodeupdate \
+	$WORKER_ARGS
+
+    ret=$?
+    log_end_msg $ret
+}
+
+do_stop() {
+    if [ "x$WORKER_ENABLE" != "xtrue" ]; then
+	return 0
+    fi
+
+    log_daemon_msg "Stopping OBS worker" "bs_worker"
+
+    /usr/bin/daemon --stop -n bs_worker -D $TOOLS_PATH
+
+    ret=$?
+    log_end_msg $ret
+}
+
+case "$1" in
+    start)
+	do_start
+	;;
+    stop)
+	do_stop
+	;;
+    restart)
+	do_stop
+	do_start
+	;;
+    *)
+	echo "Only start, stop and restart are supported"
+	exit 3
+	;;
+esac
+
+exit 0
