@@ -1,3 +1,16 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:             obs-worker
+# Required-Start:       $remote_fs
+# Required-Stop:        $remote_fs
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1
+# Short-Description:    OBS worker
+### END INIT INFO
+
+set -e
+
 . /lib/lsb/init-functions
 
 DEFAULTS_FILE=/etc/default/obs-worker
