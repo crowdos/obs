@@ -1,3 +1,6 @@
 [submodule "open-build-service"]
 	path = open-build-service
 	url = https://github.com/openSUSE/open-build-service.git
+[submodule "obs-service-tar_scm"]
+	path = obs-service-tar_scm
+	url = https://github.com/openSUSE/obs-service-tar_scm.git
