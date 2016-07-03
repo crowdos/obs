@@ -1,0 +1,3 @@
+usr/lib/obs/service/tar_scm
+usr/lib/obs/service/tar_scm.service
+etc/obs/services/tar_scm

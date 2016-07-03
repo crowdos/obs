@@ -26,4 +26,7 @@ override_dh_install:
 	rm -rf debian/tmp/usr/lib/obs/build/build
 	cp open-build-service/src/backend/build/build debian/tmp/usr/lib/obs/build/build
 	chmod +x debian/tmp/usr/lib/obs/build/build
+
+	# Now tar_scm service
+	make -C obs-service-tar_scm DESTDIR=$(CURDIR)/debian/tmp/ PREFIX=/usr install
 	dh_install --fail-missing
