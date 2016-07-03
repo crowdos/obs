@@ -16,9 +16,10 @@ Depends: ${misc:Depends},
 Description: common OBS files
  This package contains common files needed to run OBS tools.
 
-Package: obs-build
+Package: obs-build-tools
 Architecture: all
 Section: utils
+Conflicts: obs-build
 Depends: ${misc:Depends},
          libtimedate-perl,
 	 ${perl:Depends},
@@ -32,7 +33,7 @@ Description: build code for OBS
 Package: obs-worker
 Architecture: all
 Section: utils
-Depends: obs-build (= ${binary:Version}),
+Depends: obs-build-tools (= ${binary:Version}),
          ${misc:Depends},
          libxml-sax-perl,
 	 ${perl:Depends},
@@ -44,7 +45,7 @@ Description: worker code for OBS
 Package: obs-server
 Architecture: all
 Section: utils
-Depends: obs-build (= ${binary:Version}),
+Depends: obs-build-tools (= ${binary:Version}),
          ${misc:Depends},
 	 ${perl:Depends},
 	 libxml-simple-perl,
