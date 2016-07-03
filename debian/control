@@ -58,7 +58,8 @@ Description: backend tools for OBS server
 Package: obs-service-tar-scm
 Architecture: all
 Depends: ${misc:Depends},
-	 ${python:Depends}
+	 ${python:Depends},
+	 python-dateutil
 Recommends: bzr,
 	    git,
 	    mercurial,
