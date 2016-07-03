@@ -49,6 +49,7 @@ Depends: obs-build-tools (= ${binary:Version}),
          ${misc:Depends},
 	 ${perl:Depends},
 	 libxml-simple-perl,
+	 libxml-parser-perl,
 	 daemon,
          obs-common
 Description: backend tools for OBS server

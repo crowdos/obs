@@ -62,6 +62,7 @@ do_start() {
     _do_start DISPATCH_ENABLE bs_dispatch
     _do_start PUBLISH_ENABLE bs_publish
     _do_start WARDEN_ENABLE bs_warden
+    _do_start DODUP_ENABLE bs_dodup
     for i in $SCHED_ARCHS; do
 	_do_start SCHED_ENABLE $i;
     done
@@ -73,6 +74,7 @@ do_stop() {
     _do_stop DISPATCH_ENABLE bs_dispatch
     _do_stop PUBLISH_ENABLE bs_publish
     _do_stop WARDEN_ENABLE bs_warden
+    _do_stop DODUP_ENABLE bs_dodup
     for i in $SCHED_ARCHS; do
 	_do_stop SCHED_ENABLE $i
     done
