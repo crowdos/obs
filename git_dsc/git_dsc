@@ -1,0 +1,161 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import argparse
+import os
+import sys
+import logging
+import subprocess
+import time
+from urlparse import urlparse
+
+def run_cmd(cmd, cwd, raisesysexit=False):
+    """Execute the command cmd in the working directory cwd and check return
+    value. If the command returns non-zero and raisesysexit is True raise a
+    SystemExit exception otherwise return a tuple of return code and command
+    output.
+    """
+    logging.debug("COMMAND: %s", cmd)
+
+    # Ensure we get predictable results when parsing the output of commands
+    # like 'git branch'
+    env = os.environ.copy()
+    env['LANG'] = 'C'
+
+    proc = subprocess.Popen(cmd,
+                            shell=False,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            cwd=cwd,
+                            env=env)
+
+    output = proc.communicate()[0]
+
+    if proc.returncode and raisesysexit:
+        logging.info("ERROR(%d): %s", proc.returncode, repr(output))
+        sys.exit("Command failed(%d): %s" % (proc.returncode, repr(output)))
+    else:
+        logging.debug("RESULT(%d): %s", proc.returncode, repr(output))
+    return (proc.returncode, output)
+
+class GitRepo:
+    def __init__(self, args):
+        self.args = args
+        self.clone_dir = self.__get_clone_dir()
+        self.version = None
+
+    def clone(self):
+        run_cmd(['git', 'clone', self.args.url, self.clone_dir], self.args.outdir, True)
+
+    def __get_clone_dir(self):
+        dir=urlparse(self.args.url)[2]
+        if dir.endswith('.git'):
+            dir=dir[:-4]
+
+        dir = dir.replace("/", "_")
+
+        return os.path.join(self.args.outdir, dir)
+
+    def checkout_branch(self):
+        run_cmd(['git', 'checkout', self.args.branch], self.clone_dir, True)
+
+    def reset_revision(self):
+        run_cmd(['git', 'reset', '--hard', self.args.revision], self.clone_dir, True)
+
+    def set_version(self):
+        # Get the last version:
+        cl=os.path.join(self.clone_dir, "debian/changelog")
+        ret, ver = run_cmd(["dpkg-parsechangelog", '-l', cl, '-S', 'Version'],
+                           self.clone_dir, True)
+        ver=ver.rstrip()
+
+        if ver == self.args.revision:
+            # We are happy
+            self.version = ver
+            return
+
+        # revision can be either a tag or a sha or HEAD
+        # If it's a tag then it has to have a corresponding debian/changelog entry
+        if self.revision_is_last_tag():
+            sys.exit("revision %s does not have a corresponding debian/changelog entry"
+                     % self.args.revision)
+
+        sha = self.args.revision
+        if sha == 'HEAD':
+            ret, out = run_cmd(['git', 'show'], self.clone_dir, True)
+            out = out.split('\n')[0].split(" ")
+            if out[0] != 'commit':
+                sys.exit('malformed output %s' % " ".join(out))
+            sha = out[1]
+
+        self.version='+'.join([ver, "%s" % int(time.time()), self.guess_tag()])
+
+        # This is ugly but we don't want to change a package between native and non-native
+        if '-' in ver:
+            self.version += '-1'
+        else:
+            self.version = self.version.replace('-', '~')
+
+        text="Automatic entry by git_dsc service"
+        run_cmd(['dch', '--noconf', '-v', self.version, text], self.clone_dir, True)
+        run_cmd(['dch', '--noconf', '-r', text], self.clone_dir, True)
+
+    def revision_is_last_tag(self):
+        ret, out = run_cmd(['git', 'describe', '--tags', '--exact-match'], self.clone_dir, False)
+        return ret == 0
+
+    def guess_tag(self):
+        ret, out = run_cmd(['git', 'describe', '--tags'], self.clone_dir, True)
+        return out.rstrip('\n')
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Git to DSC')
+    parser.add_argument('-v', '--verbose',
+                        action='store_true', default=False, help='Enable verbose output')
+    parser.add_argument('-u', '--url', required=True,
+                        help='URL of git repo to clone')
+    parser.add_argument('-o', '--outdir', required=True,
+                        help='OBS service parameter. Path to output directory')
+    parser.add_argument('-b', '--branch', help='name of branch to use. Defaults to master')
+    parser.add_argument('-r', '--revision', help='commit SHA1 or tag to use. Defaults to HEAD')
+    args = parser.parse_args()
+
+    if not args.branch:
+        args.branch = "master"
+
+    if not args.revision:
+        args.revision = "HEAD"
+
+    if not os.path.isdir(args.outdir):
+        sys.exit("%s: No such directory" % args.outdir)
+
+    if os.getenv('DEBUG_GIT_DSC'):
+        args.verbose = True
+
+    return args
+
+def main():
+    args = parse_args()
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    git=GitRepo(args)
+    git.checkout_branch()
+    git.reset_revision()
+# TODO: submodules
+    git.set_version()
+    logging.debug("Version will be %s" % git.version)
+
+    ret, out = run_cmd(['dpkg-source', '-b', git.clone_dir],
+                       args.outdir, True)
+
+    for i in out.split("\n"):
+        if i.endswith(".dsc"):
+            name=os.path.join(args.outdir, i.split(" ")[-1])
+            logging.debug("DSC file is %s" % name)
+            f=open(name, 'a')
+            f.write("OBS-DCH-RELEASE: 1")
+            return
+
+if __name__ == '__main__':
+    main()

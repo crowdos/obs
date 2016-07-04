@@ -1,0 +1,11 @@
+An OBS source service that converts a git repos to a debian .dsc file and all its auxillary supplements
+
+git repos requirements:
+ - When building a tag:
+  - A git repos tag should have a corresponding debian/changelog entry
+  - The git repos snapshot will be exported as it is.
+
+ - When not building a tag:
+  - An empty changelog entry will be added
+
+If we are building a tag but we do not have a corresponding debian/changelog entry, we will abort.
