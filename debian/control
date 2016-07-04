@@ -67,3 +67,11 @@ Recommends: bzr,
 Description: An OBS source service: fetches SCM tarballs
  This is a source service for openSUSE Build Service.
  It supports downloading from svn, git, hg and bzr repositories.
+
+Package: obs-service-tar-git
+Architecture: all
+Depends: ${misc:Depends},
+	 git
+Description: OBS source service to generate sources from git
+ This package provides the service to generate source from git
+ inside an OBS source service

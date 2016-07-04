@@ -29,4 +29,12 @@ override_dh_install:
 
 	# Now tar_scm service
 	make -C obs-service-tar_scm DESTDIR=$(CURDIR)/debian/tmp/ PREFIX=/usr install
+
+	# git_tar service
+	mkdir -p $(CURDIR)/debian/tmp/usr/lib/obs/service/
+	mkdir -p $(CURDIR)/debian/tmp/etc/obs/services/
+	cp -a boss-launcher-webhook/src/service/tar_git $(CURDIR)/debian/tmp/usr/lib/obs/service/
+	cp -a boss-launcher-webhook/src/service/tar_git.service $(CURDIR)/debian/tmp/usr/lib/obs/service/
+	cp debian/tar_git $(CURDIR)/debian/tmp/etc/obs/services/
+
 	dh_install --fail-missing

@@ -1,0 +1,3 @@
+usr/lib/obs/service/tar_git
+usr/lib/obs/service/tar_git.service
+etc/obs/services/tar_git
