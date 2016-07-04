@@ -4,3 +4,6 @@
 [submodule "obs-service-tar_scm"]
 	path = obs-service-tar_scm
 	url = https://github.com/openSUSE/obs-service-tar_scm.git
+[submodule "boss-launcher-webhook"]
+	path = boss-launcher-webhook
+	url = git@github.com:MeeGoIntegration/boss-launcher-webhook.git
