@@ -92,7 +92,8 @@ class GitRepo:
             self.cache_dir = os.path.join(cache_dir, host, path)
             logging.debug('cache dir %s' % self.cache_dir)
 
-        self.clone_dir = os.path.join(self.args.outdir, 'git')
+        self.clone_dir = os.path.join(self.args.outdir, 'git', path)
+        logging.debug('clone dir %s' % self.clone_dir)
 
     def checkout_branch(self):
         run_cmd(['git', 'checkout', self.args.branch], self.clone_dir, True)
