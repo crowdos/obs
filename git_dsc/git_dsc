@@ -151,5 +151,7 @@ def main():
             f.write("OBS-DCH-RELEASE: 1")
             return
 
+    sys.exit("Cannot find generated dsc file")
+
 if __name__ == '__main__':
     main()
