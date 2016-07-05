@@ -7,9 +7,12 @@ import sys
 import logging
 import subprocess
 import time
+import socket
+import pwd
 from urlparse import urlparse
 
-def run_cmd(cmd, cwd, raisesysexit=False):
+# This is stolen from tar_scm OBS service
+def run_cmd(cmd, cwd, raisesysexit=False, extra_env={}):
     """Execute the command cmd in the working directory cwd and check return
     value. If the command returns non-zero and raisesysexit is True raise a
     SystemExit exception otherwise return a tuple of return code and command
@@ -21,6 +24,9 @@ def run_cmd(cmd, cwd, raisesysexit=False):
     # like 'git branch'
     env = os.environ.copy()
     env['LANG'] = 'C'
+
+    for key in extra_env:
+        env[key] = extra_env[key]
 
     proc = subprocess.Popen(cmd,
                             shell=False,
@@ -96,16 +102,24 @@ class GitRepo:
             self.version += '-1'
 
         text="Automatic entry by git_dsc service"
-        run_cmd(['dch', '--noconf', '-v', self.version, text], self.clone_dir, True)
-        run_cmd(['dch', '--noconf', '-r', text], self.clone_dir, True)
+        self.__run_dch(['-v', self.version, text], self.clone_dir)
+        self.__run_dch(['-r', text], self.clone_dir)
 
     def revision_is_tag(self):
         ret, out = run_cmd(['git', 'describe', '--tags', '--exact-match'], self.clone_dir, False)
         return ret == 0
 
+    def __run_dch(self, cmd, cwd):
+        env = {'DEBFULLNAME': self.conf['deb_name'],
+               'DEBEMAIL': self.conf['deb_email']}
+        command = ['dch', '--noconf']
+        command.extend(cmd)
+        return run_cmd(command, cwd, True, env)
+
 class Config:
     def __init__(self):
-        self.conf = {}
+        self.conf = {'deb_name': 'Git DSC service',
+                     'deb_email':'%s@%s' % (pwd.getpwuid(os.getuid()).pw_name, socket.getfqdn())}
 
     def read(self, file):
         for line in file:
@@ -158,6 +172,12 @@ def read_conf():
         if os.path.isfile(name):
             logging.debug("Reading configuration file %s" % name)
             conf.read(open(name))
+
+    if not conf.conf['deb_name']:
+        sys.exit('deb_name is not configured')
+
+    if not conf.conf['deb_email']:
+        sys.exit('deb_email is not configured')
 
     return conf.conf
 
