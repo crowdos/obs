@@ -1,0 +1,15 @@
+<service name="git_dsc">
+  <summary>Create a debian dsc file and the needed auxillary files from a git repository</summary>
+  <description>This service checksout or updates from a git.</description>
+  <parameter name="url">
+    <description>Repository url</description>
+    <required/>
+  </parameter>
+  <parameter name="branch">
+    <description>Branch name</description>
+  </parameter>
+  <parameter name="revision">
+    <description>Revision sha1sum or tag name</description>
+  </parameter>
+</service>
+
