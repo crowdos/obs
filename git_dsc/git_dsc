@@ -39,8 +39,9 @@ def run_cmd(cmd, cwd, raisesysexit=False):
     return (proc.returncode, output)
 
 class GitRepo:
-    def __init__(self, args):
+    def __init__(self, args, conf):
         self.args = args
+        self.conf = conf
         self.clone_dir = self.__get_clone_dir()
         self.version = None
 
@@ -102,6 +103,29 @@ class GitRepo:
         ret, out = run_cmd(['git', 'describe', '--tags', '--exact-match'], self.clone_dir, False)
         return ret == 0
 
+class Config:
+    def __init__(self):
+        self.conf = {}
+
+    def read(self, file):
+        for line in file:
+            line = line.rstrip().lstrip()
+            if line.startswith('#'):
+                continue
+            key, val = line.split('=')
+            key = key.rstrip()
+            val = val.lstrip()
+            if len(key) == 0:
+                continue
+
+            if len(val) == 0:
+                logging.debug("Removing configuration key %s" % key)
+                del self.conf[key]
+                continue
+
+            self.conf[key] = val
+            logging.debug("Setting configuration %s=%s" % (key, val))
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Git to DSC')
     parser.add_argument('-v', '--verbose',
@@ -128,12 +152,23 @@ def parse_args():
 
     return args
 
+def read_conf():
+    conf = Config()
+    for name in ['/etc/obs/services/git_dsc', os.path.expanduser('~/.obs/git_dsc')]:
+        if os.path.isfile(name):
+            logging.debug("Reading configuration file %s" % name)
+            conf.read(open(name))
+
+    return conf.conf
+
 def main():
     args = parse_args()
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    git=GitRepo(args)
+    conf = read_conf()
+
+    git=GitRepo(args, conf)
     git.checkout_branch()
     git.reset_revision()
 # TODO: submodules
