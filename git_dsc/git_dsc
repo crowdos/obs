@@ -9,7 +9,8 @@ import subprocess
 import time
 import socket
 import pwd
-from urlparse import urlparse
+import urlparse
+import shutil
 
 # This is stolen from tar_scm OBS service
 def run_cmd(cmd, cwd, raisesysexit=False, extra_env={}):
@@ -48,20 +49,49 @@ class GitRepo:
     def __init__(self, args, conf):
         self.args = args
         self.conf = conf
-        self.clone_dir = self.__get_clone_dir()
+        self.clone_dir = None
         self.version = None
+        self.cache = False
+
+    def init(self):
+        self.__get_clone_dir()
+#        if self.cache and not os.path.exists(self.cache_dir):
+#            os.makedirs(self.cache_dir)
+
+        if not os.path.exists(self.clone_dir):
+            os.makedirs(self.clone_dir)
 
     def clone(self):
-        run_cmd(['git', 'clone', self.args.url, self.clone_dir], self.args.outdir, True)
+        if self.cache:
+            if os.path.exists(self.cache_dir):
+                run_cmd(['git', 'fetch', '-q', '--prune', '--all', '--force'],
+                        self.cache_dir, True)
+            else:
+                run_cmd(['git', 'clone', '-q', '--mirror', self.args.url, self.cache_dir],
+                        self.args.outdir, True)
+            run_cmd(['git', 'clone', '-q', self.cache_dir, self.clone_dir], self.args.outdir, True)
+        else:
+            run_cmd(['git', 'clone', '-q', self.args.url, self.clone_dir], self.args.outdir, True)
+
+    def parse_url(self, url):
+        if url.startswith('http://') or url.startswith('https://'):
+            return self.__parse_http_url(url)
+        elif 'github.com' in url:
+            return self.__parse_github_url(url)
+        else:
+            sys.exit('Cannot parse URL %s' % url)
 
     def __get_clone_dir(self):
-        dir=urlparse(self.args.url)[2]
-        if dir.endswith('.git'):
-            dir=dir[:-4]
+        url = self.args.url
+        host, path = self.parse_url(url)
+        logging.debug('parsed url %s to %s %s' % (url, host, path))
 
-        dir = dir.replace("/", "_")
+        cache_dir = self.conf['cache_dir']
+        if cache_dir:
+            self.cache = True
+            self.cache_dir = os.path.join(cache_dir, host, path)
 
-        return os.path.join(self.args.outdir, dir)
+        self.clone_dir = os.path.join(self.args.outdir, 'git')
 
     def checkout_branch(self):
         run_cmd(['git', 'checkout', self.args.branch], self.clone_dir, True)
@@ -109,6 +139,9 @@ class GitRepo:
         ret, out = run_cmd(['git', 'describe', '--tags', '--exact-match'], self.clone_dir, False)
         return ret == 0
 
+    def cleanup(self):
+        shutil.rmtree(self.clone_dir)
+
     def __run_dch(self, cmd, cwd):
         env = {'DEBFULLNAME': self.conf['deb_name'],
                'DEBEMAIL': self.conf['deb_email']}
@@ -116,9 +149,29 @@ class GitRepo:
         command.extend(cmd)
         return run_cmd(command, cwd, True, env)
 
+    def __parse_http_url(self, url):
+        parts = urlparse.urlparse(url)
+
+        host = parts[1]
+        path = parts[2]
+        if path.endswith('.git'):
+            path = path[:-4]
+
+        return (host, path)
+
+    def __parse_github_url(self, url):
+        # git@github.com:owner/repos.git
+        path = url.split(':')[1]
+
+        if path.endswith('.git'):
+            path = path[:-4]
+
+        return ('git@github.com', path)
+
 class Config:
     def __init__(self):
-        self.conf = {'deb_name': 'Git DSC service',
+        self.conf = {'cache_dir': None,
+                     'deb_name': 'Git DSC service',
                      'deb_email':'%s@%s' % (pwd.getpwuid(os.getuid()).pw_name, socket.getfqdn())}
 
     def read(self, file):
@@ -179,6 +232,9 @@ def read_conf():
     if not conf.conf['deb_email']:
         sys.exit('deb_email is not configured')
 
+    if conf.conf['cache_dir'] and not os.path.isdir(conf.conf['cache_dir']):
+        sys.exit('cache dir %s does not exist' % conf.conf['cache_dir'])
+
     return conf.conf
 
 def main():
@@ -189,6 +245,8 @@ def main():
     conf = read_conf()
 
     git=GitRepo(args, conf)
+    git.init()
+    git.clone()
     git.checkout_branch()
     git.reset_revision()
 # TODO: submodules
@@ -197,6 +255,8 @@ def main():
 
     ret, out = run_cmd(['dpkg-source', '-b', git.clone_dir],
                        args.outdir, True)
+
+    git.cleanup()
 
     for i in out.split("\n"):
         if i.endswith(".dsc"):
