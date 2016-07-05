@@ -86,10 +86,11 @@ class GitRepo:
         host, path = self.parse_url(url)
         logging.debug('parsed url %s to %s %s' % (url, host, path))
 
-        cache_dir = self.conf['cache_dir']
+        cache_dir = self.conf.cache_dir
         if cache_dir:
             self.cache = True
             self.cache_dir = os.path.join(cache_dir, host, path)
+            logging.debug('cache dir %s' % self.cache_dir)
 
         self.clone_dir = os.path.join(self.args.outdir, 'git')
 
@@ -143,8 +144,8 @@ class GitRepo:
         shutil.rmtree(self.clone_dir)
 
     def __run_dch(self, cmd, cwd):
-        env = {'DEBFULLNAME': self.conf['deb_name'],
-               'DEBEMAIL': self.conf['deb_email']}
+        env = {'DEBFULLNAME': self.conf.deb_name,
+               'DEBEMAIL': self.conf.deb_email}
         command = ['dch', '--noconf']
         command.extend(cmd)
         return run_cmd(command, cwd, True, env)
@@ -170,9 +171,10 @@ class GitRepo:
 
 class Config:
     def __init__(self):
-        self.conf = {'cache_dir': None,
-                     'deb_name': 'Git DSC service',
-                     'deb_email':'%s@%s' % (pwd.getpwuid(os.getuid()).pw_name, socket.getfqdn())}
+        self.conf = Data()
+        self.conf.cache_dir = None
+        self.conf.deb_name = 'Git DSC service'
+        self.conf.deb_email = '%s@%s' % (pwd.getpwuid(os.getuid()).pw_name, socket.getfqdn())
 
     def read(self, file):
         for line in file:
@@ -187,11 +189,13 @@ class Config:
 
             if len(val) == 0:
                 logging.debug("Removing configuration key %s" % key)
-                del self.conf[key]
+                delattr(self.conf, key)
                 continue
-
-            self.conf[key] = val
+            setattr(self.conf, key, val)
             logging.debug("Setting configuration %s=%s" % (key, val))
+
+class Data(object):
+    pass
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Git to DSC')
@@ -226,19 +230,20 @@ def read_conf():
             logging.debug("Reading configuration file %s" % name)
             conf.read(open(name))
 
-    if not conf.conf['deb_name']:
+    if not conf.conf.deb_name:
         sys.exit('deb_name is not configured')
 
-    if not conf.conf['deb_email']:
+    if not conf.conf.deb_email:
         sys.exit('deb_email is not configured')
 
-    if conf.conf['cache_dir'] and not os.path.isdir(conf.conf['cache_dir']):
-        sys.exit('cache dir %s does not exist' % conf.conf['cache_dir'])
+    if conf.conf.cache_dir and not os.path.isdir(conf.conf.cache_dir):
+        sys.exit('cache dir %s does not exist' % conf.conf.cache_dir)
 
     return conf.conf
 
 def main():
     args = parse_args()
+
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
