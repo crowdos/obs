@@ -76,7 +76,7 @@ class GitRepo:
 
         # revision can be either a tag or a sha or HEAD
         # If it's a tag then it has to have a corresponding debian/changelog entry
-        if self.revision_is_last_tag():
+        if self.revision_is_tag():
             sys.exit("revision %s does not have a corresponding debian/changelog entry"
                      % self.args.revision)
 
@@ -100,7 +100,7 @@ class GitRepo:
         run_cmd(['dch', '--noconf', '-v', self.version, text], self.clone_dir, True)
         run_cmd(['dch', '--noconf', '-r', text], self.clone_dir, True)
 
-    def revision_is_last_tag(self):
+    def revision_is_tag(self):
         ret, out = run_cmd(['git', 'describe', '--tags', '--exact-match'], self.clone_dir, False)
         return ret == 0
 
