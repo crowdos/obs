@@ -88,7 +88,12 @@ class GitRepo:
                 sys.exit('malformed output %s' % " ".join(out))
             sha = out[1]
 
-        self.version='+'.join([ver, "%s" % int(time.time()), self.guess_tag()])
+        args = [ver, "%s" % int(time.time())]
+        tag = self.guess_tag()
+        if not tag == None:
+            args.append(tag)
+
+        self.version='+'.join(args)
 
         # This is ugly but we don't want to change a package between native and non-native
         if '-' in ver:
@@ -105,8 +110,12 @@ class GitRepo:
         return ret == 0
 
     def guess_tag(self):
-        ret, out = run_cmd(['git', 'describe', '--tags'], self.clone_dir, True)
-        return out.rstrip('\n')
+        ret, out = run_cmd(['git', 'tag'], self.clone_dir, True)
+        if len(out) > 0:
+            ret, out = run_cmd(['git', 'describe', '--tags'], self.clone_dir, False)
+            return out.rstrip('\n')
+
+        return None
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Git to DSC')
