@@ -58,10 +58,10 @@ class GitRepo:
 #        if self.cache and not os.path.exists(self.cache_dir):
 #            os.makedirs(self.cache_dir)
 
-        if not os.path.exists(self.clone_dir):
-            os.makedirs(self.clone_dir)
+#        if not os.path.exists(self.clone_dir):
+#            os.makedirs(self.clone_dir)
 
-    def clone(self):
+    def clone(self, cache_only=False):
         if self.cache:
             if os.path.exists(self.cache_dir):
                 run_cmd(['git', 'fetch', '-q', '--prune', '--all', '--force'],
@@ -69,7 +69,10 @@ class GitRepo:
             else:
                 run_cmd(['git', 'clone', '-q', '--mirror', self.args.url, self.cache_dir],
                         self.args.outdir, True)
-            run_cmd(['git', 'clone', '-q', self.cache_dir, self.clone_dir], self.args.outdir, True)
+
+            if not cache_only:
+                run_cmd(['git', 'clone', '-q', self.cache_dir, self.clone_dir],
+                        self.args.outdir, True)
         else:
             run_cmd(['git', 'clone', '-q', self.args.url, self.clone_dir], self.args.outdir, True)
 
@@ -100,6 +103,58 @@ class GitRepo:
 
     def reset_revision(self):
         run_cmd(['git', 'reset', '--hard', self.args.revision], self.clone_dir, True)
+
+    def __get_submodule_namess(self, file):
+        names = []
+
+        ret, out = run_cmd(['git', 'config', '-f', file, '-l'], self.clone_dir, True)
+
+        for line in out.split('\n'):
+            parts = line.split('=')
+            if len(parts) != 2:
+                continue
+            name = parts[0].split('.')[1]
+            if not name in names:
+                names.append(name)
+
+        return names
+
+    def __get_submodule_config(self, submodules_path, name, what):
+        what = '.'.join(["submodule", name, what])
+        ret, out = run_cmd(['git', 'config', '-f', submodules_path, '--get', what],
+                           self.clone_dir, True)
+        return out.split('\n')[0]
+
+    def process_submodules(self):
+        submodules_path=os.path.join(self.clone_dir, '.gitmodules')
+        if not os.path.exists(submodules_path):
+            logging.debug('repos %s does not have submodules' % self.clone_dir)
+            return
+
+        names = self.__get_submodule_namess(submodules_path)
+
+        for name in names:
+            url = self.__get_submodule_config(submodules_path, name, 'url')
+            path = self.__get_submodule_config(submodules_path, name, 'path')
+            path = os.path.join(self.clone_dir, path)
+
+            args = Data()
+            args.url = url
+            args.outdir = self.args.outdir
+            git=GitRepo(args, self.conf)
+            git.init()
+            git.clone(True)
+            ref = git.clone_dir
+            if git.cache:
+                ref = git.cache_dir
+                logging.debug('Activating cache %s for %s' % (ref, path))
+
+            run_cmd(['git', 'submodule', '--quiet', 'update', '--init', '--force',
+                     '--reference', ref, '--', path],
+                    self.clone_dir, True)
+
+            git.clone_dir = path
+            git.process_submodules()
 
     def set_version(self):
         # Get the last version:
@@ -142,7 +197,8 @@ class GitRepo:
         return ret == 0
 
     def cleanup(self):
-        shutil.rmtree(self.clone_dir)
+        # We don't use clone_dir because it contains a path and we need to nuke everything
+        shutil.rmtree(os.path.join(self.args.outdir, 'git'))
 
     def __run_dch(self, cmd, cwd):
         env = {'DEBFULLNAME': self.conf.deb_name,
@@ -255,7 +311,7 @@ def main():
     git.clone()
     git.checkout_branch()
     git.reset_revision()
-# TODO: submodules
+    git.process_submodules()
     git.set_version()
     logging.debug("Version will be %s" % git.version)
 
