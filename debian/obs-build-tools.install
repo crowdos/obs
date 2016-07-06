@@ -22,6 +22,7 @@ usr/lib/obs/build/build-pkg-deb
 usr/lib/obs/build/Build.pm
 usr/lib/obs/build/qemu-reg
 usr/lib/obs/build/createrepomddeps
+usr/lib/obs/build/chroot
 usr/lib/obs/build/build
 usr/lib/obs/build/build-vm-docker
 usr/lib/obs/build/build-recipe-spec

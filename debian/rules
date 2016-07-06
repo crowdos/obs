@@ -33,6 +33,8 @@ override_dh_install:
 	cp open-build-service/src/backend/build/build debian/tmp/usr/lib/obs/build/build
 	chmod +x debian/tmp/usr/lib/obs/build/build
 
+	cp debian/chroot debian/tmp/usr/lib/obs/build/
+
 	# Now tar_scm service
 	make -C obs-service-tar_scm DESTDIR=$(CURDIR)/debian/tmp/ PREFIX=/usr install
 

@@ -1,0 +1,19 @@
+#!/bin/bash
+# This is a chroot wrapper to make sure qemu-*-static are
+# inside the chroot.
+
+# We cannot install qemu-user-static from the target repo because
+# it will pull the target arch packages.
+
+# echo $@
+ROOT=$1
+
+# echo "Root is $ROOT"
+
+for i in /usr/bin/qemu-*-static; do
+    if [ ! -x $ROOT/$i ]; then
+	cp $i $ROOT/$i
+    fi
+done
+
+exec /usr/sbin/chroot "$@"

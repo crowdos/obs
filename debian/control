@@ -27,7 +27,10 @@ Depends: ${misc:Depends},
          obs-common,
          binutils,
 	 xz-utils
-Recommends: lxc, bsdtar
+Recommends: lxc,
+	    bsdtar,
+	    qemu-user-static,
+	    binfmt-support
 Description: build code for OBS
  This package contains the build code needed for OBS workers
 
