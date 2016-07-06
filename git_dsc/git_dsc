@@ -158,8 +158,7 @@ class GitRepo:
 
     def set_version(self):
         # Get the last version:
-        cl=os.path.join(self.clone_dir, "debian/changelog")
-        ret, ver = run_cmd(["dpkg-parsechangelog", '-l', cl, '-S', 'Version'],
+        ret, ver = run_cmd(["dpkg-parsechangelog", '-S', 'Version'],
                            self.clone_dir, True)
         ver=ver.rstrip()
 
