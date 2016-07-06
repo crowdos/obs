@@ -85,3 +85,9 @@ Depends: ${misc:Depends},
 Description: OBS source service to debian dsc files from git
  This package provides an OBS service to generate debian source
  files from git
+
+Package: obs-build-initvm-static
+Architecture: any
+Depends: ${misc:Depends}
+Description: OBS initvm tool
+ This package initvm

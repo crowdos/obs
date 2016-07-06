@@ -3,10 +3,16 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+INITVM_ARCH=$(shell bash -c '. open-build-service/src/backend/build/common_functions ; build_host_arch; echo $$BUILD_INITVM_ARCH')
+
 %:
 	dh $@ --with quilt
 
+override_dh_auto_build:
+	make -C open-build-service/src/backend/build initvm
+
 override_dh_install:
+	# Now the rest
 	make -C open-build-service/src/backend/ OBS_BACKEND_PREFIX=/usr/lib/obs/ DESTDIR=$(CURDIR)/debian/tmp/ install
 	mkdir -p debian/tmp/etc/obs/
 	mv debian/tmp/usr/lib/obs/BSConfig.pm debian/tmp/etc/obs/
@@ -43,3 +49,7 @@ override_dh_install:
 	cp -a git_dsc/git_dsc.rc $(CURDIR)/debian/tmp/etc/obs/services/git_dsc
 
 	dh_install --fail-missing
+
+override_dh_clean:
+	rm -rf open-build-service/src/backend/build/initvm.$(INITVM_ARCH)
+	dh_clean
