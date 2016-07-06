@@ -70,7 +70,6 @@ usr/lib/obs/build/substitutedeps
 usr/lib/obs/build/build-vm-pvm
 usr/lib/obs/build/build-recipe-debootstrap
 usr/lib/obs/build/lxc.conf
-usr/lib/obs/build/initvm.c
 usr/lib/obs/build/README usr/share/doc/obs-build/
 usr/lib/obs/build/HOWTO.add_another_format usr/share/doc/obs-build/
 usr/lib/obs/build/COPYING usr/share/doc/obs-build/
