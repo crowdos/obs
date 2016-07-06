@@ -220,7 +220,14 @@ class GitRepo:
 
     def __parse_github_url(self, url):
         # git@github.com:owner/repos.git
-        path = url.split(':')[1]
+        # git://github.com/owner/repo.git
+        idx=url.find('github.com')
+        idx += 10 # len github.com
+        idx += 1 # extra separator. either : or /
+        path = url[idx:]
+
+        while path.startswith('/'):
+            path=path[1:]
 
         if path.endswith('.git'):
             path = path[:-4]
