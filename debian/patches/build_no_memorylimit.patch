@@ -1,0 +1,11 @@
+--- a/open-build-service/src/backend/build/build
++++ b/open-build-service/src/backend/build/build
+@@ -1044,7 +1044,7 @@
+     fi
+ fi
+ 
+-setmemorylimit
++#setmemorylimit
+ 
+ #
+ # say hello
