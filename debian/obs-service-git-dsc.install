@@ -1,0 +1,3 @@
+usr/lib/obs/service/git_dsc
+usr/lib/obs/service/git_dsc.service
+etc/obs/services/git_dsc

@@ -75,3 +75,13 @@ Depends: ${misc:Depends},
 Description: OBS source service to generate sources from git
  This package provides the service to generate source from git
  inside an OBS source service
+
+Package: obs-service-git-dsc
+Architecture: all
+Depends: ${misc:Depends},
+	 python,
+	 git,
+	 devscripts
+Description: OBS source service to debian dsc files from git
+ This package provides an OBS service to generate debian source
+ files from git
