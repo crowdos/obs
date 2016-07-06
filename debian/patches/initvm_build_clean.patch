@@ -1,0 +1,11 @@
+--- a/open-build-service/src/backend/build/Makefile
++++ b/open-build-service/src/backend/build/Makefile
+@@ -94,6 +94,8 @@
+ 	install -m755 -d $(DESTDIR)$(pkglibdir)
+ 	install -m755 initvm.$(INITVM_ARCH) $(DESTDIR)$(pkglibdir)/initvm.$(INITVM_ARCH)
+ 
++initvm-clean:
++	rm -rf initvm.$(INITVM_ARCH)
+ 
+ dist:
+ ifeq ($(SCM),svn)
