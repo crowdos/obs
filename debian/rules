@@ -9,7 +9,7 @@ INITVM_ARCH=$(shell bash -c '. open-build-service/src/backend/build/common_funct
 	dh $@ --with quilt
 
 override_dh_auto_build:
-	make -C open-build-service/src/backend/build initvm
+	make -C open-build-service/src/backend/build initvm CFLAGS=-DDEBUG
 
 override_dh_install:
 	# Now the rest
