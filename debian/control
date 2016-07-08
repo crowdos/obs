@@ -43,6 +43,7 @@ Depends: obs-build-tools (= ${binary:Version}),
 	 ${perl:Depends},
 	 daemon,
 	 obs-common
+Recommends: eatmydata
 Description: worker code for OBS
  This package contains the worker code for OBS workers
 

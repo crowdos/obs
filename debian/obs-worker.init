@@ -23,8 +23,14 @@ if [ -s $DEFAULTS_FILE ]; then
 fi
 
 do_start() {
+    EATMYDATA=
+
     if [ "x$WORKER_ENABLE" != "xtrue" ]; then
 	return 0
+    fi
+
+    if [ "x$WORKER_EATMYDATA" = "xtrue" ]; then
+	EATMYDATA=eatmydata
     fi
 
     if [ -z "$WORKER_ARCH" ]; then
@@ -58,7 +64,7 @@ do_start() {
 	-D $TOOLS_PATH \
 	-e "DEBIAN_FRONTEND=noninteractive" \
 	-o $WORKER_LOG \
-	-r -- $TOOLS_PATH/bs_worker \
+	-r -- $EATMYDATA $TOOLS_PATH/bs_worker \
 	--arch $WORKER_ARCH \
 	--root $WORKER_ROOT \
 	--statedir $WORKER_STATE \
