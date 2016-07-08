@@ -181,11 +181,16 @@ class GitRepo:
                 sys.exit('malformed output %s' % " ".join(out))
             sha = out[1]
 
-        self.version='+'.join([ver, "%s" % int(time.time()), "git.%s" % sha[:7]])
+        # If we are dealing a non-debian native package then we extract the debian
+        # revision and append it to the end
+        i=ver.rfind('-')
+        debian_rev = ''
+        if i > -1:
+            debian_rev = ver[i:]
+            ver = ver[:i]
 
-        # This is ugly but we don't want to change a package between native and non-native
-        if '-' in ver:
-            self.version += '-1'
+        self.version='+'.join([ver, "%s" % int(time.time()), "git.%s" % sha[:7]])
+        self.version += debian_rev
 
         text="Automatic entry by git_dsc service"
         self.__run_dch(['-v', self.version, text], self.clone_dir)
