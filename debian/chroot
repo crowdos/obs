@@ -10,10 +10,12 @@ ROOT=$1
 
 # echo "Root is $ROOT"
 
-for i in /usr/bin/qemu-*-static; do
-    if [ ! -x $ROOT/$i ]; then
-	cp $i $ROOT/$i
-    fi
-done
+if stat -t /usr/bin/qemu-*-static > /dev/null 2>&1; then
+    for i in /usr/bin/qemu-*-static; do
+	if [ ! -x $ROOT/$i ]; then
+	    cp $i $ROOT/$i
+	fi
+    done
+fi
 
 exec /usr/sbin/chroot "$@"
