@@ -1,0 +1,23 @@
+--- a/open-build-service/src/backend/build/build-recipe-dsc
++++ b/open-build-service/src/backend/build/build-recipe-dsc
+@@ -77,9 +77,17 @@
+ cd $TOPDIR/BUILD
+ [ ! -f debian/changelog ] && exit 0
+ # avoid devscripts dependency and mimic dch
+-PACKAGE=\$(dpkg-parsechangelog 2> /dev/null | grep -E '^Source:'  | awk '{ print \$NF }')
+-VERSION=\$(dpkg-parsechangelog 2> /dev/null | grep -E '^Version:' | awk '{ print \$NF }')
+-sed -i "s/\${PACKAGE} (\${VERSION})/\${PACKAGE} (\${VERSION}$OBS_DCH_RELEASE)/" debian/changelog
++PACKAGE=\$(dpkg-parsechangelog -S Source 2> /dev/null)
++VERSION=\$(dpkg-parsechangelog -S Version 2> /dev/null)
++MAINTAINER=\$(dpkg-parsechangelog -S Maintainer 2> /dev/null)
++DISTRIBUTION=\$(dpkg-parsechangelog -S Distribution 2> /dev/null)
++DATE=\$(date --rfc-2822)
++echo "\${PACKAGE} (\${VERSION}$OBS_DCH_RELEASE) \${DISTRIBUTION}; urgency=low\n" >> debian/changelog.
++echo "  * Rebuild by OBS\n" >> debian/changelog.
++echo " -- \${MAINTAINER}  \${DATE}\n" >> debian/changelog.
++
++cat debian/changelog >> debian/changelog.
++mv -f debian/changelog. debian/changelog
+ EOF
+     fi
+ 
