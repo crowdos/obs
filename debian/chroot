@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # This is a chroot wrapper to make sure qemu-*-static are
 # inside the chroot.
 
