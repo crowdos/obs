@@ -333,6 +333,11 @@ def main():
 
     git.cleanup()
 
+    # Now the build script
+    f=open(os.path.join(args.outdir, "build.script"), 'w')
+    f.write('dpkg-buildpackage -us -uc -b')
+    f.close()
+
     for i in out.split("\n"):
         if i.endswith(".dsc"):
             name=os.path.join(args.outdir, i.split(" ")[-1])
