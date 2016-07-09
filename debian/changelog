@@ -1,3 +1,11 @@
+obs (0.20160710.0-1) unstable; urgency=medium
+
+  * [4bd96d0] hook: Add code, configuration template and db schema
+  * [015304f] hook: add debian packaging bits
+  * [45aca33] Add gbp.conf for dch options
+
+ -- Mohammed Sameer <msameer@debian.org>  Sun, 10 Jul 2016 02:47:08 +0300
+
 obs (0.20160709.0-1) unstable; urgency=low
 
   * Initial release.
