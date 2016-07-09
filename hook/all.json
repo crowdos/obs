@@ -1,0 +1,14 @@
+{
+    "mysql": {
+	"host": "localhost",
+	"username": "",
+	"password": "",
+	"database": ""
+    },
+    "obs": {
+	"host": "",
+	"username": "",
+	"password": "",
+	"verify_ssl": false
+    }
+}

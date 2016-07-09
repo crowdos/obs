@@ -1,0 +1,136 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import json
+import sys
+import requests
+import MySQLdb as mdb
+
+SERVICE_TEMPLATE = """
+<services>
+  <service name="git_dsc">
+    <param name="url">@URL@</param>
+    <param name="branch">@BRANCH@</param>
+    <param name="revision">@REVISION@</param>
+  </service>
+</services>
+"""
+
+NEW_PACKAGE_TEMPLATE = """
+<package name="@PACKAGE@" project="@PROJECT@">
+  <title/>
+  <description/>
+</package>
+"""
+
+def parse(o, s):
+   try:
+      o = o.split('/')
+      if o[0] != 'refs' or o[1] != s:
+         return None
+      return o[2]
+   except:
+      return None
+
+def is_created(o):
+   try:
+      forced = o['forced']
+      created = o['created']
+      return created == True or forced == True
+   except:
+      return False
+
+def package_is_new(conf, project, package):
+   url="%s/source/%s/%s/_meta" % (conf['host'], project, package)
+   r=requests.get(url, auth=(conf['username'], conf['password']), verify=conf['verify_ssl'])
+   return r.status_code != 200
+
+def create_package(conf, project, package):
+   url="%s/source/%s/%s/_meta" % (conf['host'], project, package)
+   data=NEW_PACKAGE_TEMPLATE
+   data=data.replace('@PACKAGE@', package).replace('@PROJECT@', project)
+   r=requests.put(url, auth=(conf['username'], conf['password']), verify=conf['verify_ssl'], data=data)
+   if package_is_new(conf, project, package):
+      raise Exception("Failed to create package %s in %s" % (package, project))
+
+def update_package(conf, project, package, data):
+   url="%s/source/%s/%s/_service" % (conf['host'], project, package)
+   r=requests.put(url, auth=(conf['username'], conf['password']), verify=conf['verify_ssl'], data=data)
+
+   if r.status_code != 200:
+      raise Exception("Failed to update service for package %s in %s" % (package, project))
+
+def execute_hook(conf, **args):
+   repo=args['repo']
+   branch=args['branch']
+   tag=args['tag']
+   project=args['project']
+   package=args['package']
+   data=SERVICE_TEMPLATE
+   data=data.replace('@BRANCH@', branch).replace('@URL@', repo).replace('@REVISION@', tag)
+
+   if package_is_new(conf, project, package):
+      create_package(conf, project, package)
+
+   update_package(conf, project, package, data)
+
+def main():
+   if len(sys.argv) < 2:
+      sys.exit('missing json file')
+
+   try:
+      o = json.load(open(sys.argv[1]))
+   except:
+      sys.exit('Could not parse file %s' % sys.argv[1])
+
+   if not is_created(o):
+      print "nothing created."
+      sys.exit(0)
+
+   tag = parse(o['ref'], 'tags')
+   branch = parse(o['base_ref'], 'heads')
+
+   if not tag:
+      sys.exit('could not find any tags')
+
+   if not branch:
+      print "could not get branch name. assuming master"
+      branch = 'master'
+
+   repo = o['repository']['ssh_url']
+
+   print "repo: %s, branch: %s, tag: %s" % (repo, branch, tag)
+
+   try:
+      conf = json.load(open('/etc/webhooks/all.json'))
+   except:
+      sys.exit("Failed to load config: %s" % str(sys.exc_info()))
+
+   with mdb.connect(host=conf['mysql']['host'],
+                    user=conf['mysql']['username'],
+                    passwd=conf['mysql']['password'],
+                    db=conf['mysql']['database'],
+                    use_unicode=True) as conn:
+
+      conn.execute("""SELECT hook.id, project.name, package.name FROM hook
+                      INNER JOIN repo ON hook.repo=repo.id
+                      INNER JOIN package ON package.id=hook.package
+                      INNER JOIN project ON project.id=hook.project
+                      WHERE repo.url=%s AND hook.branch=%s""",
+                   (repo, branch))
+      result = conn.fetchall()
+      if len(result) == 0:
+         print "no hooks configured for %s [%s]" % (repo, branch)
+         sys.exit(0)
+      for row in result:
+         print "Firing hook %s %s %s" % row
+         try:
+            execute_hook(conf['obs'], repo=repo, tag=tag, branch=branch,
+                         project=row[1], package=row[2])
+         except:
+            print "Failed %s" % str(sys.exc_info())
+         else:
+            print "ok"
+
+if __name__ == '__main__':
+   main()
