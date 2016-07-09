@@ -50,6 +50,12 @@ override_dh_install:
 	cp -a git_dsc/git_dsc.service $(CURDIR)/debian/tmp/usr/lib/obs/service/
 	cp -a git_dsc/git_dsc.rc $(CURDIR)/debian/tmp/etc/obs/services/git_dsc
 
+	# hook:
+	mkdir -p $(CURDIR)/debian/tmp/usr/libexec/webhooks/
+	mkdir -p $(CURDIR)/debian/tmp/etc/webhooks/
+	cp hook/all $(CURDIR)/debian/tmp/usr/libexec/webhooks/
+	cp hook/all.json $(CURDIR)/debian/tmp/etc/webhooks/
+	chmod +x $(CURDIR)/debian/tmp/usr/libexec/webhooks/all
 	dh_install --fail-missing
 
 override_dh_clean:
