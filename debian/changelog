@@ -1,3 +1,11 @@
+obs (0.20160715.0-1) unstable; urgency=medium
+
+  * [aa1d598] git_dsc: fix path parsing when we are parsing http(s) URI
+  * [aa45b65] git_dsc: add support for parsing git:// URLs
+  * [461e294] git_dsc: Add a unit test to test URL parsing code
+
+ -- Mohammed Sameer <msameer@foolab.org>  Fri, 15 Jul 2016 00:06:59 +0300
+
 obs (0.20160714.0-1) unstable; urgency=medium
 
   * [4d0c9f0] Added webhooks-tool and its packaging bits
