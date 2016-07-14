@@ -216,10 +216,11 @@ class GitRepo:
 
         host = parts[1]
         path = parts[2]
+
         if path.endswith('.git'):
             path = path[:-4]
         if path.startswith('/'):
-            path = path[1:0]
+            path = path[1:]
 
         return (host, path)
 
