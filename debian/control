@@ -107,3 +107,13 @@ Recommends: webhooks
 Description: webhooks script to trigger OBS service run
  This package provides the webhooks hook needed to update
  OBS service files
+
+Package: obs-webhooks-tool
+Architecture: all
+Depends: ${misc:Depends},
+	 python,
+	 python-mysqldb,
+Recommends: obs-webhook-plugin
+Description: a tool for manipulating webhooks
+ This package provides the webhooks tool which can be used to list or
+ add hooks

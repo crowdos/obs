@@ -1,0 +1,158 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import json
+import sys
+import MySQLdb as mdb
+
+class Cmd:
+    def __init__(self):
+        self.conf = json.load(open("/etc/webhooks/all.json"))['mysql']
+
+    def connect(self):
+        return mdb.connect(host=self.conf['host'],
+                           user=self.conf['username'],
+                           passwd=self.conf['password'],
+                           db=self.conf['database'],
+                           use_unicode=True)
+       
+    def run(self, args):
+        print "implement me!"
+        exit(1)
+
+    def run_add(self, args, table, column):
+        __verify="SELECT id FROM {0} WHERE {1}=%s"
+        __id="SELECT MAX(id) FROM {0}"
+        __add="INSERT INTO {0}(id, {1}) VALUES(%s, %s)"
+
+        if len(args) != 1:
+            self.error("can only accept one argument")
+        name=args[0]
+        with self.connect() as conn:
+            r=conn.execute(__verify.format(table, column), (name))
+            if r > 0:
+                self.done('%s already exists' % name)
+
+            conn.execute(__id.format(table))
+            r=conn.fetchall()
+            id=r[0][0]
+            conn.execute(__add.format(table, column), (id + 1, args[0]))
+
+    def error(self, s):
+        sys.exit(s)
+
+    def done(self, s):
+        print s
+        sys.exit(0)
+
+
+class List(Cmd):
+    """List all hooks"""
+
+    def run(self, args):
+        with self.connect() as conn:
+            conn.execute("SELECT hook.id, repo.url, hook.branch, project.name, package.name FROM hook INNER JOIN project ON hook.project=project.id INNER JOIN package ON hook.id=package.id INNER JOIN repo ON hook.repo=repo.id")
+            result = conn.fetchall()
+            for row in result:
+                print "%s %s [%s] -> %s %s" % row
+
+
+class AddPackage(Cmd):
+    """Add a package: <package>"""
+
+    def run(self, args):
+        return self.run_add(args, 'package', 'name')
+
+class AddProject(Cmd):
+    """Add a project: <project>"""
+
+    def run(self, args):
+        return self.run_add(args, 'project', 'name')
+
+
+class AddRepo(Cmd):
+    """Add a repository: <repo>"""
+    def run(self, args):
+        return self.run_add(args, 'repo', 'url')
+
+
+class AddHook(Cmd):
+    """Add a hook: <repo or repo nick> <branch> <project> <package>"""
+    def run(self, args):
+        if len(args) != 4:
+            self.error("can only accept 4 arguments")
+        repo=args[0]
+        branch=args[1]
+        project=args[2]
+        package=args[3]
+        repo_id=self.find_repo_id(repo)
+        if repo_id == -1:
+            print "Assuming %s is a repo nick" % repo
+            repo_id, repo = self.find_repo_nick_id(repo)
+            if repo_id == -1:
+                self.error('Cannot find repo %s' % repo)
+            else:
+                print "resolved %s to %s" % (args[0], repo)
+        with self.connect() as conn:
+            conn.execute("SELECT id FROM package WHERE name=%s", (package))
+            package_id = conn.fetchall()[0][0]
+            conn.execute("SELECT id FROM project WHERE name=%s", (project))
+            project_id = conn.fetchall()[0][0]
+            conn.execute("SELECT MAX(id) FROM hook")
+            max_hook=conn.fetchall()[0][0]
+            r=conn.execute("SELECT id FROM hook WHERE project=%s AND package=%s AND repo=%s AND branch=%s", (project_id, package_id, repo_id, branch))
+            if r == 0:
+                conn.execute("INSERT INTO hook(id, project, package, branch, repo) VALUES(%s, %s, %s, %s, %s)", (max_hook+1, project_id, package_id, branch, repo_id))
+            elif r > 1:
+                self.error('Found multiple hook definitions')
+            else:
+                self.done('already exists')
+
+    def find_repo_id(self, repo):
+        with self.connect() as conn:
+            r=conn.execute("SELECT id, url FROM repo WHERE url=%s", (repo))
+            if r > 1:
+                repos = [rp[1] for rp in conn.fetchall()]
+                self.error('Found multiple results for repo %s\n%s' % (repo, "\n".join(repos)))
+            elif r == 0:
+                return -1
+            return conn.fetchall()[0][0]
+
+    def find_repo_nick_id(self, repo):
+        with self.connect() as conn:
+            r=conn.execute("SELECT id, url FROM repo WHERE url rlike %s", (repo))
+            if r > 1:
+                repos = [rp[1] for rp in conn.fetchall()]
+                self.error('Found multiple results for repo %s\n%s' % (repo, "\n".join(repos)))
+
+            elif r == 0:
+                return -1, None
+
+            return conn.fetchall()[0] 
+
+__cmds = {'list': List,
+          'addpackage': AddPackage,
+          'addproject': AddProject,
+          'addrepo': AddRepo,
+          'addhook': AddHook}
+
+def usage(c):
+    print "Usage: %s <cmd>" % sys.argv[0]
+    for item in __cmds:
+        print "  %s: %s" % (item, __cmds[item].__doc__)
+
+    exit(c)
+
+def main():
+    if len(sys.argv) < 2:
+        usage(1)
+
+    cmd = sys.argv[1]
+    del sys.argv[0]
+    del sys.argv[0]
+
+    c=__cmds[cmd]()
+    c.run(sys.argv)
+
+if __name__ == '__main__':
+    main()
