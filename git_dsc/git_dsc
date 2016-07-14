@@ -361,5 +361,28 @@ def main():
 
     sys.exit("Cannot find generated dsc file")
 
+def test():
+    data = [
+        ('git@github.com:foo/bar.git', 'git@github.com', 'foo/bar'),
+        ('git@github.com:foo/bar', 'git@github.com', 'foo/bar'),
+        ('http://foo.com/foo/bar', 'foo.com', 'foo/bar'),
+        ('https://foo.com/foo/bar', 'foo.com', 'foo/bar'),
+        ('http://foo.com/foo/bar.git', 'foo.com', 'foo/bar'),
+        ('https://foo.com/foo/bar.git', 'foo.com', 'foo/bar'),
+        ('git://git.service.com/foo/bar.git', 'git.service.com', 'foo/bar'),
+        ('git://git.service.com/foo/bar', 'git.service.com', 'foo/bar'),
+        ]
+    r=GitRepo(None, None)
+    for d in data:
+        out = r.parse_url(d[0])
+
+        if out[0] != d[1]:
+            sys.exit("%s parse output %s is not expected %s" % (d[0], out[0], d[1]))
+        if out[1] != d[2]:
+            sys.exit("%s parse output %s is not expected %s" % (d[0], out[1], d[2]))
+
 if __name__ == '__main__':
-    main()
+    if '--test' in sys.argv:
+        test()
+    else:
+        main()
