@@ -81,6 +81,8 @@ class GitRepo:
             return self.__parse_http_url(url)
         elif 'github.com' in url:
             return self.__parse_github_url(url)
+        elif url.startswith('git://'):
+            return self.__parse_git_url(url)
         else:
             sys.exit('Cannot parse URL %s' % url)
 
@@ -239,6 +241,16 @@ class GitRepo:
             path = path[:-4]
 
         return ('git@github.com', path)
+
+    def __parse_git_url(self, url):
+        url = url[6:]
+        idx = url.find('/')
+        host = url[:idx]
+        path = url[idx + 1:]
+        if path.endswith('.git'):
+            path = path[:-4]
+        return host, path
+
 
 class Config:
     def __init__(self):
