@@ -1,3 +1,9 @@
+obs (0.20160714.0-1) unstable; urgency=medium
+
+  * [4d0c9f0] Added webhooks-tool and its packaging bits
+
+ -- Mohammed Sameer <msameer@foolab.org>  Thu, 14 Jul 2016 20:27:29 +0300
+
 obs (0.20160710.0-1) unstable; urgency=medium
 
   * [4bd96d0] hook: Add code, configuration template and db schema
