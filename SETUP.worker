@@ -1,0 +1,18 @@
+A worker is a debian stable VM.
+
+Create the VM.
+configure obs /etc/hosts to associate the new worker name with its IP
+configure worker /etc/network/interfaces
+configure worker /etc/hosts and put OBS host and worker host
+adjust root password and create needed accounts
+fix sshd DNS usage
+install eatmydata, binfmt-support and qemu-user-static
+
+cross compiler for the worker:
+apt-get install curl proot
+curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add -
+dpkg --add-architecture armhf
+echo "deb http://emdebian.org/tools/debian/ jessie main" > /etc/apt/sources.list.d/crosstools.list
+apt-get update
+apt-get install crossbuild-essential-armhf
+

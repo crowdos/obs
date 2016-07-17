@@ -1,1 +1,2 @@
 usr/lib/obs/bs_worker
+SETUP.worker usr/share/doc/obs-worker/
