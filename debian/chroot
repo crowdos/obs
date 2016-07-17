@@ -24,6 +24,11 @@ if [ "$BUILD" = "arm" ]; then
 
     ARG="$ARG -b /usr/lib/gcc/arm-linux-gnueabihf/ -b /usr/bin/make -b /usr/bin/dpkg-buildpackage"
 
+    # Those are also needed. The only example I have is building mlite fails
+    # due too many symbolic links if we do not have cp but let's add mv and ln
+    for i in ls cp mv ln; do \
+        ARG="$ARG -b /bin/$i"; done
+
     if [ "$2" = "dpkg" ] || [ "$2" = "/sbin/ldconfig" ]; then
 	# Do not bind while we are installing. We can trash our rootfs
 	ARG=""
