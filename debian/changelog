@@ -1,3 +1,11 @@
+obs (0.20160717.1) unstable; urgency=medium
+
+  * [935c560] fakeroot is also recommended for workers so document that
+  * [b55c081] chroot: bind mv, cp and ls to fix some build errors
+  * [23c7d83] do not bind /tmp. We will create it via worker config.
+
+ -- Mohammed Sameer <msameer@debian.org>  Sun, 17 Jul 2016 18:51:27 +0300
+
 obs (0.20160717.0-1) unstable; urgency=medium
 
   * [e6b93b5] reworked chroot script to make use of proot and armhf cross compiler
