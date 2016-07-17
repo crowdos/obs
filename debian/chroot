@@ -34,7 +34,7 @@ if [ "$BUILD" = "arm" ]; then
 	ARG=""
     fi
 
-    exec proot $ARG \
+    exec proot -w / $ARG \
 	 -q qemu-arm-static -r "$@"
 fi
 
