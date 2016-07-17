@@ -32,7 +32,8 @@ Recommends: lxc,
 	    qemu-user-static,
 	    binfmt-support,
 	    crossbuild-essential-armhf,
-	    proot
+	    proot,
+	    fakeroot
 Description: build code for OBS
  This package contains the build code needed for OBS workers
 

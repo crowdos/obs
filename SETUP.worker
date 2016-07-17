@@ -16,3 +16,5 @@ echo "deb http://emdebian.org/tools/debian/ jessie main" > /etc/apt/sources.list
 apt-get update
 apt-get install crossbuild-essential-armhf
 
+# Recommended but not needed
+apt-get install fakeroot
