@@ -1,3 +1,11 @@
+obs (0.20160717.0-1) unstable; urgency=medium
+
+  * [e6b93b5] reworked chroot script to make use of proot and armhf cross compiler
+  * [ea6a586] crossbuild-essential-armhf and proot are recommended for obs-build-tools
+  * [ad27dee] Added basic worker setup tips
+
+ -- Mohammed Sameer <msameer@debian.org>  Sun, 17 Jul 2016 04:48:59 +0300
+
 obs (0.20160715.0-1) unstable; urgency=medium
 
   * [aa1d598] git_dsc: fix path parsing when we are parsing http(s) URI
