@@ -30,7 +30,9 @@ Depends: ${misc:Depends},
 Recommends: lxc,
 	    bsdtar,
 	    qemu-user-static,
-	    binfmt-support
+	    binfmt-support,
+	    crossbuild-essential-armhf,
+	    proot
 Description: build code for OBS
  This package contains the build code needed for OBS workers
 
