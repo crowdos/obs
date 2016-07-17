@@ -1,3 +1,9 @@
+obs (0.20160717.2) unstable; urgency=medium
+
+  * [ec43996] chroot: set initial path to / to avoid proot warning about worker_root not existing
+
+ -- Mohammed Sameer <msameer@debian.org>  Sun, 17 Jul 2016 19:07:10 +0300
+
 obs (0.20160717.1) unstable; urgency=medium
 
   * [935c560] fakeroot is also recommended for workers so document that
