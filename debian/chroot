@@ -1,21 +1,39 @@
 #!/bin/sh
-# This is a chroot wrapper to make sure qemu-*-static are
-# inside the chroot.
 
-# We cannot install qemu-user-static from the target repo because
-# it will pull the target arch packages.
+BUILD=
+case "$BUILD_ARCH" in
+    *armv7*)
+	BUILD=arm
+	;;
+    *86*)
+	BUILD=x86
+	;;
+    *)
+	echo "Unknown build architecture"
+	exit 1
+	;;
+esac
 
-# echo $@
-ROOT=$1
-
-# echo "Root is $ROOT"
-
-if stat -t /usr/bin/qemu-*-static > /dev/null 2>&1; then
-    for i in /usr/bin/qemu-*-static; do
-	if [ ! -x $ROOT/$i ]; then
-	    cp $i $ROOT/$i
-	fi
+if [ "$BUILD" = "arm" ]; then
+    ARG=""
+    for i in addr2line gcc-nm ar gcc-nm-4.9 as gcc-ranlib c++ gcc-ranlib-4.9 c++filt \
+	gcov-4.9 c89 gprof c99 ld cc ld.bfd cpp-4.9 ld.gold dwp nm elfedit objcopy g++ \
+	objdump g++-4.9 ranlib gcc readelf gcc-4.9 size gcc-ar strings gcc-ar-4.9 strip; do \
+	ARG="$ARG -b /usr/bin/arm-linux-gnueabihf-$i:/usr/bin/$i"; \
     done
+
+    ARG="$ARG -b /usr/lib/gcc/arm-linux-gnueabihf/ -b /usr/bin/make -b /usr/bin/dpkg-buildpackage"
+
+    if [ "$2" = "dpkg" ] || [ "$2" = "/sbin/ldconfig" ]; then
+	# Do not bind while we are installing. We can trash our rootfs
+	ARG=""
+    fi
+
+    exec proot $ARG \
+	 -b /tmp:/tmp \
+	 -q qemu-arm-static -r "$@"
 fi
 
-exec /usr/sbin/chroot "$@"
+if [ "$BUILD" = "x86" ]; then
+    exec /usr/sbin/chroot "$@"
+fi
